@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"net"
 
 	"github.com/armon/go-socks5"
 	"github.com/caarlos0/env"
@@ -11,6 +12,7 @@ import (
 type params struct {
 	User     string `env:"PROXY_USER" envDefault:""`
 	Password string `env:"PROXY_PASSWORD" envDefault:""`
+	Address  string `env:"PROXY_ADDRESS" envDefault:""`
 	Port     string `env:"PROXY_PORT" envDefault:"1080"`
 }
 
@@ -41,7 +43,7 @@ func main() {
 	}
 
 	log.Printf("Start listening proxy service on port %s\n", cfg.Port)
-	if err := server.ListenAndServe("tcp", ":"+cfg.Port); err != nil {
+	if err := server.ListenAndServe("tcp", net.JoinHostPort(cfg.Address, cfg.Port)); err != nil {
 		log.Fatal(err)
 	}
 }
