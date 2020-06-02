@@ -5,4 +5,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-s' -o ./s
 
 FROM scratch
 COPY --from=builder /go/src/github.com/Snawoot/socks5/socks5 /
+USER 9999:9999
+EXPOSE 1080/tcp
 ENTRYPOINT ["/socks5"]
