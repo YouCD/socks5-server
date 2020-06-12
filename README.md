@@ -28,6 +28,9 @@ Leave `PROXY_USER` and `PROXY_PASSWORD` empty for skip authentication options wh
 |PROXY_PASSWORD|String|EMPTY|Set proxy password for auth, used with PROXY_USER|
 |PROXY_ADDRESS|String|EMPTY|Set listen address for application|
 |PROXY_PORT|String|1080|Set listen port for application|
+|PROXY_TLS_CERT|String|EMPTY|If set, enable TLS and use certificate from specified file|
+|PROXY_TLS_KEY|String|EMPTY|Key file for certificate specified in `PROXY_TLS_CERT`|
+|PROXY_TLS_CAFILE|String|EMPTY|If set, enable mutual TLS authentication and verify client certificates against CAs specified in CAFILE|
 
 ## Test running service
 
