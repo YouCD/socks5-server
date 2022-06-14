@@ -1,7 +1,6 @@
 package log
 
 import (
-	"PrometheusAlertFire/pkg/config"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,7 +25,7 @@ var logger *zap.SugaredLogger
 var AtomicLevel = zap.NewAtomicLevelAt(zap.DebugLevel)
 
 func init() {
-	log := NewLogger(config.Cfg.Alert.LogLevel)
+	log := NewLogger("info")
 	// defer log.Sync()
 	logger = log.Sugar()
 	logger.Sync()

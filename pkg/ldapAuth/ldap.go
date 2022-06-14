@@ -2,10 +2,10 @@ package ldapAuth
 
 import (
 	"fmt"
+	"github.com/Snawoot/socks5-server/pkg/log"
 	"github.com/armon/go-socks5"
 	"github.com/go-ldap/ldap"
 	"io"
-	"log"
 	"reflect"
 )
 
@@ -81,7 +81,7 @@ func (l *LdapAuth) Authenticate(reader io.Reader, writer io.Writer) (*socks5.Aut
 
 	ldapEntry, exist := l.userExist(string(user))
 	if !exist {
-		log.Printf("Cannot find user: %s", user)
+		log.Warnf("Cannot find user: %s", user)
 		if _, err := writer.Write([]byte{userAuthVersion, authFailure}); err != nil {
 			return nil, err
 		}
@@ -89,7 +89,7 @@ func (l *LdapAuth) Authenticate(reader io.Reader, writer io.Writer) (*socks5.Aut
 	}
 
 	if err := conn.Bind(ldapEntry.DN, string(pass)); err != nil {
-		log.Printf("User %s password is invalid", user)
+		log.Warnf("User %s password is invalid", user)
 		if _, err := writer.Write([]byte{userAuthVersion, authFailure}); err != nil {
 			return nil, err
 		}
@@ -127,7 +127,7 @@ func (l *LdapAuth) userExist(uid string) (ldapEntry *ldap.Entry, exist bool) {
 
 	sr, err := conn.Search(searchRequest)
 	if err != nil {
-		log.Println(err)
+		log.Warn(err)
 		return nil, false
 	}
 

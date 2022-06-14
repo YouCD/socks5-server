@@ -3,12 +3,12 @@ package main
 import (
 	"crypto/tls"
 	"github.com/Snawoot/socks5-server/pkg/ldapAuth"
+	"github.com/Snawoot/socks5-server/pkg/log"
 	"github.com/Snawoot/socks5-server/pkg/tls2"
 	"github.com/armon/go-socks5"
 	"github.com/caarlos0/env"
-	"log"
 	"net"
-	"os"
+
 	"strings"
 )
 
@@ -33,17 +33,17 @@ func main() {
 	cfg := params{}
 	err := env.Parse(&cfg)
 	if err != nil {
-		log.Printf("%+v\n", err)
+		log.Error("%+v\n", err)
 	}
-	ldapAuth.InitDefaultpPool(cfg.LdapHost)
-	ldap := ldapAuth.NewLdap(cfg.LdapUser, cfg.LdapPassword, cfg.LdapBaseDB, cfg.LdapHost)
 
 	//Initialize socks5 config
 	socsk5conf := &socks5.Config{
-		Logger: log.New(os.Stdout, "", log.LstdFlags),
+		//Logger: log.New(os.Stdout, "", log.LstdFlags),
 	}
 	switch {
 	case strings.ToLower(cfg.LdapEnable) == "true":
+		ldapAuth.InitDefaultpPool(cfg.LdapHost)
+		ldap := ldapAuth.NewLdap(cfg.LdapUser, cfg.LdapPassword, cfg.LdapBaseDB, cfg.LdapHost)
 		socsk5conf.AuthMethods = []socks5.Authenticator{ldap}
 	case cfg.User+cfg.Password != "":
 		creds := socks5.StaticCredentials{
@@ -56,7 +56,7 @@ func main() {
 
 	server, err := socks5.New(socsk5conf)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	var listener net.Listener
@@ -64,25 +64,25 @@ func main() {
 
 	if cfg.TLSCert != "" {
 		if cfg.TLSKey == "" {
-			log.Fatal("PROXY_TLS_KEY is not specified")
+			log.Error("PROXY_TLS_KEY is not specified")
 		}
 		tlsCfg, err := tls2.MakeServerTLSConfig(cfg.TLSCert, cfg.TLSKey, cfg.TLSCACert)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		listener, err = tls.Listen("tcp", listenAddr, tlsCfg)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 	} else {
 		listener, err = net.Listen("tcp", listenAddr)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 	}
 
-	log.Printf("Proxy service is listening on port %s\n", cfg.Port)
+	log.Infof("Proxy service is listening on port %s", cfg.Port)
 	if err := server.Serve(listener); err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 }
