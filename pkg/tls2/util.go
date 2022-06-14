@@ -1,13 +1,13 @@
-package main
+package tls2
 
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
 	"errors"
+	"io/ioutil"
 )
 
-func makeServerTLSConfig(certfile, keyfile, cafile string) (*tls.Config, error) {
+func MakeServerTLSConfig(certfile, keyfile, cafile string) (*tls.Config, error) {
 	var cfg tls.Config
 	cert, err := tls.LoadX509KeyPair(certfile, keyfile)
 	if err != nil {

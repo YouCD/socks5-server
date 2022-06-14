@@ -16,3 +16,4 @@
 socks5-server
 bin/
 *.snap
+.idea

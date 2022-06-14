@@ -1,13 +1,15 @@
 package main
 
 import (
-	"log"
-	"os"
-	"net"
 	"crypto/tls"
-
+	"github.com/Snawoot/socks5-server/pkg/ldapAuth"
+	"github.com/Snawoot/socks5-server/pkg/tls2"
 	"github.com/armon/go-socks5"
 	"github.com/caarlos0/env"
+	"log"
+	"net"
+	"os"
+	"strings"
 )
 
 type params struct {
@@ -18,6 +20,12 @@ type params struct {
 	TLSCert   string `env:"PROXY_TLS_CERT" envDefault:""`
 	TLSKey    string `env:"PROXY_TLS_KEY" envDefault:""`
 	TLSCACert string `env:"PROXY_TLS_CACERT" envDefault:""`
+
+	LdapUser     string `env:"PROXY_LDAP_USER" envDefault:""`
+	LdapPassword string `env:"PROXY_LDAP_PASSWORD" envDefault:""`
+	LdapBaseDB   string `env:"PROXY_LDAP_BASEDN" envDefault:""`
+	LdapHost     string `env:"PROXY_LDAP_HOST" envDefault:""`
+	LdapEnable   string `env:"PROXY_LDAP_ENABLE" envDefault:""`
 }
 
 func main() {
@@ -27,17 +35,22 @@ func main() {
 	if err != nil {
 		log.Printf("%+v\n", err)
 	}
+	ldapAuth.InitDefaultpPool(cfg.LdapHost)
+	ldap := ldapAuth.NewLdap(cfg.LdapUser, cfg.LdapPassword, cfg.LdapBaseDB, cfg.LdapHost)
 
 	//Initialize socks5 config
 	socsk5conf := &socks5.Config{
 		Logger: log.New(os.Stdout, "", log.LstdFlags),
 	}
-
-	if cfg.User+cfg.Password != "" {
+	switch {
+	case strings.ToLower(cfg.LdapEnable) == "true":
+		socsk5conf.AuthMethods = []socks5.Authenticator{ldap}
+	case cfg.User+cfg.Password != "":
 		creds := socks5.StaticCredentials{
 			cfg.User: cfg.Password,
 		}
 		cator := socks5.UserPassAuthenticator{Credentials: creds}
+		socsk5conf.AuthMethods = []socks5.Authenticator{cator}
 		socsk5conf.AuthMethods = []socks5.Authenticator{cator}
 	}
 
@@ -50,10 +63,10 @@ func main() {
 	listenAddr := net.JoinHostPort(cfg.Address, cfg.Port)
 
 	if cfg.TLSCert != "" {
-        if cfg.TLSKey == "" {
-            log.Fatal("PROXY_TLS_KEY is not specified")
-        }
-		tlsCfg, err := makeServerTLSConfig(cfg.TLSCert, cfg.TLSKey, cfg.TLSCACert)
+		if cfg.TLSKey == "" {
+			log.Fatal("PROXY_TLS_KEY is not specified")
+		}
+		tlsCfg, err := tls2.MakeServerTLSConfig(cfg.TLSCert, cfg.TLSKey, cfg.TLSCACert)
 		if err != nil {
 			log.Fatal(err)
 		}
