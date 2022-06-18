@@ -19,8 +19,20 @@ docker run -d \
 ```
 
 Leave `PROXY_USER` and `PROXY_PASSWORD` empty for skip authentication options while running socks5 server.
+## Start LDAP server
+```shell
+docker run --name ldap \
+ --env LDAP_ORGANISATION="youcd" \
+ --env LDAP_DOMAIN="youcd.com" \
+ --env LDAP_ADMIN_PASSWORD="P@ssw0rd" \
+ -p 389:389 \
+ -p 636:639 \
+ --detach osixia/openldap:1.5.0
 
-## Start container with LDAP
+
+
+```
+## Start with LDAP
 ```shell
 export PROXY_LDAP_BASEDN=dc=youcd,dc=com
 export PROXY_LDAP_ENABLE=true
